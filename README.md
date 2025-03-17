@@ -1,3 +1,3 @@
-# Meu App PyQt5
+# __Projeto Automação de Produtos__.
 
-Este é um aplicativo básico criado com a biblioteca PyQt5.
+Este projeto visa implementar uma automação em parte de um processo repetivo e muito manual.

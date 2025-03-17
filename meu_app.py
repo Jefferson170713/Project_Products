@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton, QVBo
 from PyQt5.QtGui import QIcon
 import pandas as pd
 import os
+import re
 
 # Suprimir avisos de depreciação
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -78,7 +79,7 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(container)
     
-    # 1.1 - função para selecionar arquivos
+    # 1.1 - função para selecionar arquivos 1° Passo.
     def select_files(self):
         options = QFileDialog.Options()
         files, _ = QFileDialog.getOpenFileNames(self, "Selecionar Arquivos CSV", "", "CSV Files (*.csv);;All Files (*)", options=options)
@@ -88,8 +89,8 @@ class MainWindow(QMainWindow):
             self.text_edit_file.setText("\n".join(file_names))
             self.read_files(files)
     
-    # 1.2 - função para ler arquivos
-    def read_files(self, files):
+    # 1.2 - função para ler arquivos 1° Passo.
+    def read_files(self, files): 
         total_files = len(files)
         self.progress_bar_file.setMaximum(total_files)
         for num, file in enumerate(files):
@@ -102,7 +103,7 @@ class MainWindow(QMainWindow):
         print(f'Quantidade de linhas e Colunas: {self.df_file.shape} \n') 
         print(self.df_file.head(2), '\n')  
 
-    # 1.3 - função para buscar produto
+    # 1.3 - função para buscar produto 1° Passo.
     def search_product(self):
         options = QFileDialog.Options()
         files, _ = QFileDialog.getOpenFileNames(self, "Selecionar Arquivos CSV", "", "CSV Files (*.csv);;All Files (*)", options=options)
@@ -112,7 +113,7 @@ class MainWindow(QMainWindow):
             self.label_file_search.setText(f"{num_products} produtos encontrados")
             self.text_edit_search.setText("\n".join(self.df_search['NU_PRODUTO'].astype(str).tolist()))
 
-    # 1.4 - função para ler arquivos de busca
+    # 1.4 - função para ler arquivos de busca 1° Passo.
     def read_search_files(self, files):
         for file in files:
             temp_df = pd.read_csv(file, sep=';', encoding='latin1')
@@ -133,7 +134,7 @@ class MainWindow(QMainWindow):
         self.modify_column_service()
         #self.save_file()
 
-    # 2.1 - função para filtrar produtos
+    # 2.1 - função para filtrar produtos 2° Passo.
     def search_for_products(self):
         print(f'2.1° search_for_products: Etapa Iniciada, filtrando os produtos.')
         print(f'Quantidade de linhas e colunas do df_file: {self.df_file.shape}')
@@ -145,7 +146,7 @@ class MainWindow(QMainWindow):
         print(self.df_file.head(2), '\n')
         
 
-    # 2.2 - função deletar colunas
+    # 2.2 - função deletar colunas 3° Passo.
     def columns_todelete(self):
         print(f'2.2° columns_todelete: Etapa Iniciada, deletando colunas.')
         colums_to_delete = ['FL_ABRANGENCIA', 'CD_REDE_ANS', 'NM_COMERCIAL', 'PRESTADOR', 'NM_LOCAL_ATENDIMENTO', 'SITUACAO_PRODUTO']
@@ -153,7 +154,7 @@ class MainWindow(QMainWindow):
         print(f'Quantidade de linhas e colunas do df_file agora deletado: {self.df_file.shape}\n')
         print(self.df_file.head(2), '\n')
 
-    # 2.3 - função para reorganizar as colunas
+    # 2.3 - função para reorganizar as colunas 3° Passo.
     def rearranging_columns(self):
         print(f'2.3° rearranging_columns: Etapa Iniciada, reorganizando as colunas.')
 
@@ -197,6 +198,37 @@ class MainWindow(QMainWindow):
                 return key
         return 'OUTROS'
 
+    # 4.0 - função para filtrar as colunas TIPO_PESSOA eTIPO_PRESTADOR_SERVICO 5° Passo.
+    def filter_columns(self):
+        print(f'4.0° filter_columns: Etapa Iniciada, filtrando as colunas TIPO_PESSOA e TIPO_PRESTADOR_SERVICO.')
+        list_bady_clinique = [
+        'CORPO CLINICLO', 'CORPO CLÍNICO', 'CORPO_CLINICO', 'CORPO_CLÍNICO',
+        'Corpo Clinico', 'Corpo Clínico', 'Corpo_Clinico', 'Corpo_Clínico',
+        'corpo clinico', 'corpo clínico', 'corpo_clinico', 'corpo_clínico',
+        ]
+        df_filtered = self.df_file.copy()
+        df_filtered['STATUS_CLINIQUE'] = df_filtered.apply(lambda row: self.check_bad_clinique(row['NM_PRESTADOR'], list_bady_clinique), axis=1)
+        print(df_filtered.STATUS_CLINIQUE.value_counts(), '\n')
+        df_filtered_status = df_filtered[df_filtered.STATUS_CLINIQUE == 'NÃO'].copy()
+        print(f'Quantidade de linhas e colunas do df_filtered_status agora filtrado: {df_filtered_status.shape}\n')
+        print(f'Processo de reorganização das colunas.')
+
+        list_status_clinique = ['CONTRATACAO', 'NU_PRODUTO', 'NM_PRODUTO', 'REDE_ATENDIMENTO',
+                    'DS_REDE_ATENDIMENTO', 'UF', 'CIDADE', 'NM_PRESTADOR', 'NM_FANTASIA',
+                    'TIPO_ESTABELECIMENTO', 'SERVICO', 'DS_ESPECIALIDADE', 'CD_PRESTADOR',
+                    'NU_CGC_CPF', 'NU_CNES_CRM', 'ENDERECO', 'COMPLEMENTO', 'NM_BAIRRO',
+                    'CD_CEP', 'DS_FONE', 'SITE', 'NM_LIVRO', 'TIPO_PESSOA', 'IBGE',
+                    'TIPO_PRESTADOR_SERVICO']
+        self.df_file = df_filtered_status[list_status_clinique].copy()
+        print(f'Quantidade de linhas e colunas do df_file agora filtrado: {self.df_file.shape}\n')
+        print(self.df_file.head(2), '\n')
+    
+    # 4.1 - função para checar nome específico e deletar 5° Passo.
+    def check_bad_clinique(self, row, list_bady_clinique):
+        for bad_clinique in list_bady_clinique:
+            if bad_clinique in row:
+                return 'SIM'
+        return 'NÃO'
         
 
 if __name__ == "__main__":
