@@ -1,6 +1,15 @@
 import sys
 import warnings
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton, QVBoxLayout, QWidget, QFileDialog, QTextEdit, QProgressBar
+from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QMainWindow
+from PyQt5.QtWidgets import QLabel
+from PyQt5.QtWidgets import QPushButton
+from PyQt5.QtWidgets import QVBoxLayout
+from PyQt5.QtWidgets import QWidget
+from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtWidgets import QTextEdit
+from PyQt5.QtWidgets import QProgressBar
+from PyQt5.QtWidgets import QHBoxLayout
 from PyQt5.QtGui import QIcon
 import pandas as pd
 import os
@@ -22,11 +31,12 @@ class MainWindow(QMainWindow):
         # 0.3 - Ícone do app
         self.setWindowIcon(QIcon('./ico/logo_Hapvida.ico'))
         # Dimensões da janela
-        self.resize(600, 400)
+        self.resize(600, 450)
 
         # 0.4 - Criação dos widgets
         self.label_file_selects = QLabel("Nenhum arquivo selecionado")
         self.button_selects = QPushButton("Selecionar Arquivos")
+        self.button_selects.setFixedSize(120, 30)
         self.text_edit_file = QTextEdit()
         self.text_edit_file.setReadOnly(True)
         self.progress_bar_file = QProgressBar()
@@ -34,10 +44,12 @@ class MainWindow(QMainWindow):
 
         self.label_file_search = QLabel("Nenhum arquivo selecionado")
         self.button_search = QPushButton("Buscar Produto")
+        self.button_search.setFixedSize(120, 30)
         self.text_edit_search = QTextEdit()
         self.text_edit_search.setReadOnly(True)
 
         self.button_process = QPushButton("Processar e Salvar")
+        self.button_process.setFixedSize(120, 30)
         self.text_edit_process = QTextEdit()
         self.text_edit_process.setReadOnly(True)
         self.progress_bar_process = QProgressBar()
@@ -50,20 +62,32 @@ class MainWindow(QMainWindow):
 
         # 0.6 - layout_file
         layout_file = QVBoxLayout()
-        layout_file.addWidget(self.button_selects)
+        layout_file_buttons = QHBoxLayout()  # Layout horizontal para centralizar os botões
+        layout_file_buttons.addStretch(1)
+        layout_file_buttons.addWidget(self.button_selects)
+        layout_file_buttons.addStretch(1)
+        layout_file.addLayout(layout_file_buttons)
         layout_file.addWidget(self.label_file_selects)
         layout_file.addWidget(self.text_edit_file)
         layout_file.addWidget(self.progress_bar_file)
 
         # 0.7 - layout_search
         layout_search = QVBoxLayout()
-        layout_search.addWidget(self.button_search)
+        layout_search_buttons = QHBoxLayout()  # Layout horizontal para centralizar os botões
+        layout_search_buttons.addStretch(1)
+        layout_search_buttons.addWidget(self.button_search)
+        layout_search_buttons.addStretch(1)
+        layout_search.addLayout(layout_search_buttons)
         layout_search.addWidget(self.label_file_search)
         layout_search.addWidget(self.text_edit_search)
 
         # 0.8 - layout_process
         layout_process = QVBoxLayout()
-        layout_process.addWidget(self.button_process)
+        layout_process_buttons = QHBoxLayout()  # Layout horizontal para centralizar os botões
+        layout_process_buttons.addStretch(1)
+        layout_process_buttons.addWidget(self.button_process)
+        layout_process_buttons.addStretch(1)
+        layout_process.addLayout(layout_process_buttons)
         layout_process.addWidget(self.text_edit_process)
         layout_process.addWidget(self.progress_bar_process)
 
@@ -132,6 +156,7 @@ class MainWindow(QMainWindow):
         self.columns_todelete()
         self.rearranging_columns()
         self.modify_column_service()
+        self.filter_columns()
         #self.save_file()
 
     # 2.1 - função para filtrar produtos 2° Passo.
@@ -225,9 +250,9 @@ class MainWindow(QMainWindow):
     
     # 4.1 - função para checar nome específico e deletar 5° Passo.
     def check_bad_clinique(self, row, list_bady_clinique):
-        for bad_clinique in list_bady_clinique:
-            if bad_clinique in row:
-                return 'SIM'
+        pattern = '|'.join(list_bady_clinique)
+        if re.search(pattern, row, re.IGNORECASE):
+            return 'SIM'
         return 'NÃO'
         
 
