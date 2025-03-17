@@ -11,6 +11,7 @@ from PyQt5.QtWidgets import QTextEdit
 from PyQt5.QtWidgets import QProgressBar
 from PyQt5.QtWidgets import QHBoxLayout
 from PyQt5.QtGui import QIcon
+from datetime import datetime
 import pandas as pd
 import os
 import re
@@ -48,6 +49,7 @@ class MainWindow(QMainWindow):
         self.text_edit_search = QTextEdit()
         self.text_edit_search.setReadOnly(True)
 
+        self.label_process = QLabel("Processamento")
         self.button_process = QPushButton("Processar e Salvar")
         self.button_process.setFixedSize(120, 30)
         self.text_edit_process = QTextEdit()
@@ -88,6 +90,7 @@ class MainWindow(QMainWindow):
         layout_process_buttons.addWidget(self.button_process)
         layout_process_buttons.addStretch(1)
         layout_process.addLayout(layout_process_buttons)
+        layout_process.addWidget(self.label_process)
         layout_process.addWidget(self.text_edit_process)
         layout_process.addWidget(self.progress_bar_process)
 
@@ -152,6 +155,7 @@ class MainWindow(QMainWindow):
     # 2.0 - função para processar e salvar (vazia por enquanto)
     def process_and_save(self):
         print(f'2.0° process_and_save: Etapa Iniciada, processando e salvando os arquivos.')
+        folder = self.select_folder_to_save()
         self.search_for_products()
         self.columns_todelete()
         self.rearranging_columns()
@@ -159,7 +163,7 @@ class MainWindow(QMainWindow):
         self.filter_columns()
         self.sort_columns()
         self.delete_NU_CGC_CPF()
-        #self.save_file()
+        self.save_file(folder)
 
     # 2.1 - função para filtrar produtos 2° Passo.
     def search_for_products(self):
@@ -283,7 +287,41 @@ class MainWindow(QMainWindow):
         print(f'Mostrando os valores únicos de NU_CGC_CPF tipo 1: {self.df_file[self.df_file.TIPO_PESSOA == 1]["NU_CGC_CPF"].unique()} \n')
         print(f'Mostrando os valores únicos de NU_CGC_CPF tipo 2: {self.df_file[self.df_file.TIPO_PESSOA == 2]["NU_CGC_CPF"].unique()} \n')
         print(self.df_file.head(2), '\n')
-        ...
+
+    # 6.0 - função para salvar o arquivo 7° Passo.
+    def select_folder_to_save(self):
+        options = QFileDialog.Options()
+        folder = QFileDialog.getExistingDirectory(self, "Selecionar Pasta para Salvar", options=options)
+        return folder
+    
+    # 6.1 - função para salvar o arquivo 7° Passo.
+    def save_file(self, folder):
+        print(f'6.1° save_file: Etapa Iniciada, salvando o arquivo. \n')
+        date = datetime.now()
+        date = date.strftime('%d_%m_%Y')
+        print(f'Mostrando a date {date}')
+
+        total_products = len(self.df_search)
+        self.progress_bar_process.setMaximum(total_products)
+        self.label_process.setText(f"Processamento de {total_products} produtos")
+        
+        for i, product in enumerate(self.df_search.values):
+            df_product = self.df_file[self.df_file.NU_PRODUTO == product[0]].copy()
+            df_product.reset_index(drop=True, inplace=True)
+            rede = df_product.REDE_ATENDIMENTO.unique()[0]  # Corrigir o nome da coluna
+            file_name = f'REDE {rede}_{product[0]}_{date}.csv'
+            file_path = os.path.join(folder, file_name)
+            df_product.to_csv(file_path, sep=';', encoding='latin1', index=False)
+            print(f'{file_name} - {df_product.shape}')
+            self.progress_bar_process.setValue(i + 1)
+            self.text_edit_process.append(f'Arquivo salvo: {file_name}')
+            self.label_process.setText(f"Processando {i + 1} de {total_products} produtos")
+            
+            # Forçar a atualização da interface do usuário
+            QApplication.processEvents()
+        
+        print(f'Finalizado!!!')
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
