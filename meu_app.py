@@ -157,6 +157,8 @@ class MainWindow(QMainWindow):
         self.rearranging_columns()
         self.modify_column_service()
         self.filter_columns()
+        self.sort_columns()
+        self.delete_NU_CGC_CPF()
         #self.save_file()
 
     # 2.1 - função para filtrar produtos 2° Passo.
@@ -254,7 +256,34 @@ class MainWindow(QMainWindow):
         if re.search(pattern, row, re.IGNORECASE):
             return 'SIM'
         return 'NÃO'
-        
+    
+    # 5.0 - função para classificar colunas 6° Passo.
+    def sort_columns(self):
+        print(f'5.0° sort_columns: Etapa Iniciada, classificando as colunas.')
+        sort_list = ['UF', 'CIDADE', 'NM_LIVRO', 'DS_ESPECIALIDADE']
+        df_sort_columns = self.df_file.copy()
+        df_sort_columns.sort_values(by=sort_list, inplace=True)
+        df_sort_columns.reset_index(drop=True, inplace=True)
+        self.df_file = df_sort_columns.copy()
+        print(f'Etapa de classificação concluída. \n')
+        print(self.df_file.head(2), '\n')
+
+    # 5.1 função para exluir cpf e cnpj na tabela 6° Passo.
+    def delete_NU_CGC_CPF(self):
+        print(f'5.1° delete_NU_CGC_CPF: Etapa Iniciada, deletando NU_CGC_CPF.')
+        df_delete_NU_CGC_CPF = self.df_file.copy()
+        df_delete_NU_CGC_CPF['NU_CGC_CPF'] = df_delete_NU_CGC_CPF['NU_CGC_CPF'].astype(str)
+        df_delete_NU_CGC_CPF['NU_CGC_CPF'] = df_delete_NU_CGC_CPF['NU_CGC_CPF'].str.replace('.0','', regex=False)
+        print(f'Etapa de exclusão concluída. \n')
+        print(f'Apagando as informações que constam em NU_CGC_CPF onde TIPO_PESSOA é 1.')
+        df_delete_NU_CGC_CPF.loc[df_delete_NU_CGC_CPF['TIPO_PESSOA'] == 1, 'NU_CGC_CPF'] = ''
+        print(f'Excluindo a coluna CD_PRESTADOR')
+        df_delete_NU_CGC_CPF.drop(columns=['CD_PRESTADOR'], inplace=True)
+        self.df_file = df_delete_NU_CGC_CPF.copy()
+        print(f'Mostrando os valores únicos de NU_CGC_CPF tipo 1: {self.df_file[self.df_file.TIPO_PESSOA == 1]["NU_CGC_CPF"].unique()} \n')
+        print(f'Mostrando os valores únicos de NU_CGC_CPF tipo 2: {self.df_file[self.df_file.TIPO_PESSOA == 2]["NU_CGC_CPF"].unique()} \n')
+        print(self.df_file.head(2), '\n')
+        ...
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
