@@ -333,7 +333,6 @@ class MainWindow(QMainWindow):
         path_ico = os.path.join(path, path_ico[0])
         print(path_ico)
         return path_ico
-        ...
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
