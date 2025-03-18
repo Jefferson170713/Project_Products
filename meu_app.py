@@ -26,11 +26,13 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.df_file = pd.DataFrame()
         self.df_search = pd.DataFrame()
+        self.path_ico_file = ''
         # 0.2 - título do app
         self.setWindowTitle("App Produtos")
 
         # 0.3 - Ícone do app
-        self.setWindowIcon(QIcon('./ico/logo_Hapvida.ico'))
+        self.path_ico_file = self.path_ico()
+        self.setWindowIcon(QIcon(self.path_ico_file))
         # Dimensões da janela
         self.resize(600, 450)
 
@@ -322,6 +324,16 @@ class MainWindow(QMainWindow):
         
         print(f'Finalizado!!!')
 
+    # 7.0 - função para pegar a logo da empresa
+    def path_ico(self):
+        print('7.0° path_ico: Etapa Iniciada, pegando a logo da empresa.')
+        path = './ico/'
+        path_ico = os.listdir(path)
+        path_ico = [ico for ico in path_ico if ico.endswith('.ico')]
+        path_ico = os.path.join(path, path_ico[0])
+        print(path_ico)
+        return path_ico
+        ...
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
