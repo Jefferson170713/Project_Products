@@ -42,7 +42,7 @@ O programa utiliza arquivos CSV extraídos do sistema ou ERP da empresa, além d
 ### __5° Passo__: Filtros nas Colunas `TIPO_PESSOA` e `TIPO_PRESTADOR_SERVICO`
 - Filtrar valores específicos:
   - `TIPO_PESSOA`: Excluir valores iguais a `1` (Corpo Clínico).
-  - `TIPO_PRESTADOR_SERVICO`: Excluir linhas com valores iguais a `CORPO CLÍNILO`.
+  - `TIPO_PRESTADOR_SERVICO`: Excluir linhas com valores iguais a `CORPO CLÍNICO`.
 
 ### __6° Passo__: Classificação dos Dados
 - Classificar os dados pelas seguintes colunas:
